@@ -57,14 +57,14 @@ export default function AppSidebar() {
                     to={item.url}
                     className={({ isActive }) =>
                       [
-                        "block",
+                        "block rounded-[7px]",
                         isActive
                           ? "bg-gray-100 border border-blue-500 text-blue-700"
                           : "bg-white text-black hover:bg-gray-100 hover:border hover:border-gray-300",
                       ].join(" ")
                     }
                   >
-                    <SidebarMenuButton className="flex items-center gap-3 w-full py-2 px-2 rounded-md font-semibold text-lg transition-colors">
+                    <SidebarMenuButton className="flex items-center gap-3 w-full py-2 px-2 font-semibold text-lg transition-colors">
                       <item.icon className="w-5 h-5" />
                       <span className="flex-1 text-left text-lg">
                         {item.title}
