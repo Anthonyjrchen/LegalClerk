@@ -7,6 +7,7 @@ import Settings from "./pages/Settings";
 import TemplateBuilder from "./pages/TemplateBuilder";
 import TrialScheduler from "./pages/TrialScheduler";
 import Home from "./pages/Home";
+import Signup from "./pages/Signup";
 
 export default function App() {
   return (
@@ -14,15 +15,16 @@ export default function App() {
       <BrowserRouter>
         <Routes>
           <Route path="/login" element={<Login />} />
-          {/* <Route element={<ProtectedRoute />}> */}
-          <Route path="/home" element={<Home />}>
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="settings" element={<Settings />} />
-            <Route path="templateBuilder" element={<TemplateBuilder />} />
-            <Route path="trialScheduler" element={<TrialScheduler />} />
-            <Route index element={<Dashboard />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route element={<ProtectedRoute />}>
+            <Route path="/home" element={<Home />}>
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="settings" element={<Settings />} />
+              <Route path="templateBuilder" element={<TemplateBuilder />} />
+              <Route path="trialScheduler" element={<TrialScheduler />} />
+              <Route index element={<Dashboard />} />
+            </Route>
           </Route>
-          {/* </Route> */}
           <Route path="/" element={<Login />} />
         </Routes>
       </BrowserRouter>
