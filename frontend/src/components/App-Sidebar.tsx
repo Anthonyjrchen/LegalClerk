@@ -1,4 +1,5 @@
 import { Calendar, Home, Inbox, Search, Settings } from "lucide-react";
+import { NavLink } from "react-router-dom";
 
 import {
   Sidebar,
@@ -15,28 +16,23 @@ import {
 // Menu items.
 const items = [
   {
-    title: "Home",
-    url: "#",
+    title: "Dashboard",
+    url: "/home/dashboard",
     icon: Home,
   },
   {
-    title: "Inbox",
-    url: "#",
-    icon: Inbox,
-  },
-  {
-    title: "Calendar",
-    url: "#",
+    title: "Template Builder",
+    url: "/home/templateBuilder",
     icon: Calendar,
   },
   {
-    title: "Search",
-    url: "#",
-    icon: Search,
+    title: "Trial Scheduler",
+    url: "/home/trialScheduler",
+    icon: Inbox,
   },
   {
     title: "Settings",
-    url: "#",
+    url: "/home/settings",
     icon: Settings,
   },
 ];
@@ -57,12 +53,24 @@ export default function AppSidebar() {
             <div>
               {items.map((item) => (
                 <div key={item.title} className="mb-3">
-                  <SidebarMenuButton className="flex items-center gap-3 w-full py-2 px-2 rounded-md bg-white text-black font-semibold text-lg transition-colors hover:bg-gray-100 hover:border hover:border-gray-300">
-                    <item.icon className="w-5 h-5 text-black" />
-                    <span className="flex-1 text-left text-black text-lg">
-                      {item.title}
-                    </span>
-                  </SidebarMenuButton>
+                  <NavLink
+                    to={item.url}
+                    className={({ isActive }) =>
+                      [
+                        "block",
+                        isActive
+                          ? "bg-gray-100 border border-blue-500 text-blue-700"
+                          : "bg-white text-black hover:bg-gray-100 hover:border hover:border-gray-300",
+                      ].join(" ")
+                    }
+                  >
+                    <SidebarMenuButton className="flex items-center gap-3 w-full py-2 px-2 rounded-md font-semibold text-lg transition-colors">
+                      <item.icon className="w-5 h-5" />
+                      <span className="flex-1 text-left text-lg">
+                        {item.title}
+                      </span>
+                    </SidebarMenuButton>
+                  </NavLink>
                 </div>
               ))}
             </div>

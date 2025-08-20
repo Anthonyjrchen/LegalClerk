@@ -3,8 +3,9 @@ import { AuthProvider } from "./AuthProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
-import Analytics from "./pages/Analytics";
-import Schedules from "./pages/Schedules";
+import Settings from "./pages/Settings";
+import TemplateBuilder from "./pages/TemplateBuilder";
+import TrialScheduler from "./pages/TrialScheduler";
 import Home from "./pages/Home";
 
 export default function App() {
@@ -16,8 +17,9 @@ export default function App() {
           {/* <Route element={<ProtectedRoute />}> */}
           <Route path="/home" element={<Home />}>
             <Route path="dashboard" element={<Dashboard />} />
-            <Route path="analytics" element={<Analytics />} />
-            <Route path="schedules" element={<Schedules />} />
+            <Route path="settings" element={<Settings />} />
+            <Route path="templateBuilder" element={<TemplateBuilder />} />
+            <Route path="trialScheduler" element={<TrialScheduler />} />
             <Route index element={<Dashboard />} />
           </Route>
           {/* </Route> */}
