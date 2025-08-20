@@ -1,4 +1,4 @@
-import { Calendar, Home, Inbox, Settings, LogOut } from "lucide-react";
+import { Calendar, Home, Inbox, Settings, LogOut, UserCog } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabaseClient";
 
@@ -33,6 +33,11 @@ const items = [
     title: "Settings",
     url: "/home/settings",
     icon: Settings,
+  },
+  {
+    title: "Profile",
+    url: "/home/profile",
+    icon: UserCog,
   },
 ];
 

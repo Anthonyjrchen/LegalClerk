@@ -8,6 +8,8 @@ import TemplateBuilder from "./pages/TemplateBuilder";
 import TrialScheduler from "./pages/TrialScheduler";
 import Home from "./pages/Home";
 import Signup from "./pages/Signup";
+import Profile from "./pages/Profile";
+import Callback from "./pages/Callback";
 
 export default function App() {
   return (
@@ -16,12 +18,14 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
+          <Route path="/callback" element={<Callback />} />
           <Route element={<ProtectedRoute />}>
             <Route path="/home" element={<Home />}>
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="settings" element={<Settings />} />
               <Route path="templateBuilder" element={<TemplateBuilder />} />
               <Route path="trialScheduler" element={<TrialScheduler />} />
+              <Route path="profile" element={<Profile />} />
               <Route index element={<Dashboard />} />
             </Route>
           </Route>
