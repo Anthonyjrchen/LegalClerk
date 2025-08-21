@@ -8,6 +8,45 @@ export default function Profile() {
   const CLIENT_ID = "bdcf2624-e786-4a59-a8a2-eecabe38ffdd";
   const REDIRECT_URI = "http://localhost:5173/callback";
   const SCOPES = "openid offline_access Calendars.ReadWrite";
+  const [eventResult, setEventResult] = useState<string | null>(null);
+  async function handleTestEvent() {
+    setEventResult(null);
+    if (!accessToken) return;
+    const testEvent = {
+      subject: "Test Event",
+      start: {
+        dateTime: "2025-08-22T10:00:00",
+        timeZone: "Pacific Standard Time",
+      },
+      end: {
+        dateTime: "2025-08-22T11:00:00",
+        timeZone: "Pacific Standard Time",
+      },
+      body: { contentType: "HTML", content: "This is a test event." },
+    };
+    try {
+      console.log(JSON.stringify({ event: testEvent }));
+      const res = await fetch(
+        "http://localhost:8080/api/msgraph/create-event",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${accessToken}`,
+          },
+          body: JSON.stringify({ event: testEvent }),
+        }
+      );
+      const data = await res.json();
+      if (data.error) {
+        setEventResult(`Error: ${data.error}`);
+      } else {
+        setEventResult("Event created! ID: " + (data.id || "unknown"));
+      }
+    } catch (err) {
+      setEventResult("Network error or server not reachable.");
+    }
+  }
 
   useEffect(() => {
     async function getSessionAndUser() {
@@ -70,12 +109,23 @@ export default function Profile() {
           {msConnected === null ? (
             <span className="text-gray-500">Checking connection...</span>
           ) : msConnected ? (
-            <button
-              className="px-4 py-2 bg-green-600 text-white rounded"
-              disabled
-            >
-              Microsoft Account Connected
-            </button>
+            <div>
+              <button
+                className="px-4 py-2 bg-green-600 text-white rounded mb-2"
+                disabled
+              >
+                Microsoft Account Connected
+              </button>
+              <button
+                className="px-4 py-2 bg-yellow-500 text-white rounded ml-2"
+                onClick={handleTestEvent}
+              >
+                Test Create Calendar Event
+              </button>
+              {eventResult && (
+                <div className="mt-2 text-sm text-gray-700">{eventResult}</div>
+              )}
+            </div>
           ) : (
             <a
               href={getMicrosoftAuthUrl()}

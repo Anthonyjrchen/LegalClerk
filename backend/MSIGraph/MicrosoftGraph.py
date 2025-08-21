@@ -14,7 +14,12 @@ REDIRECT_URI = "http://localhost:5173/callback"
 
 @router.post("/api/msgraph/create-event")
 async def msgraph_create_event(request: Request, user=Depends(get_current_user)):
-    data = await request.json()
+    try:
+        data = await request.json()
+    except Exception as e:
+        print("Error parsing JSON:", e)
+        raise HTTPException(status_code=400, detail="Invalid JSON")
+    print("Received data:", data)
     user_id = user["sub"]
     # Fetch access token from Supabase
     token_result = supabase.table("ms_tokens").select("access_token").eq("user_id", user_id).execute()
@@ -23,6 +28,7 @@ async def msgraph_create_event(request: Request, user=Depends(get_current_user))
     access_token = token_result.data[0]["access_token"]
     # Prepare event payload from request data
     event_payload = data.get("event")
+    print("Event payload:", event_payload)
     if not event_payload:
         raise HTTPException(status_code=400, detail="Missing event payload")
     # Call Microsoft Graph API to create event
