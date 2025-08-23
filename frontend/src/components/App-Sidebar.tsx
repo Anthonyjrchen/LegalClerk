@@ -20,14 +20,14 @@ const items = [
     icon: Home,
   },
   {
-    title: "Template Builder",
-    url: "/home/templateBuilder",
-    icon: Calendar,
+    title: "Create Trial",
+    url: "/home/createTrial",
+    icon: Inbox,
   },
   {
-    title: "Trial Scheduler",
-    url: "/home/trialScheduler",
-    icon: Inbox,
+    title: "Form Calculator",
+    url: "/home/formCalculator",
+    icon: Calendar,
   },
   {
     title: "Settings",

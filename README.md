@@ -43,7 +43,8 @@ npm install
 ```sh
 cd ../backend
 python -m venv venv
-venv\Scripts\activate
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy RemoteSigned # if you see a "running scripts is disabled error"
+venv/Scripts/activate
 pip install -r requirements.txt
 ```
 
