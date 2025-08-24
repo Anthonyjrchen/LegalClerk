@@ -1,91 +1,28 @@
-import { useState } from "react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "../components/ui/card";
-import { Button } from "../components/ui/button";
-import { Input } from "../components/ui/input";
-import { Label } from "../components/ui/label";
-import { Textarea } from "../components/ui/textarea";
-import { Checkbox } from "../components/ui/checkbox";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "../components/ui/select";
-import { Calendar, Users, Bell, Save } from "lucide-react";
-
-interface CalendarType {
-  id: string;
-  name: string;
-  owner: string;
-  color: string;
-}
+import { useCreateTrial } from "../hooks/useCreateTrial";
+import TrialDetailsCard from "../components/trial/TrialDetailsCard";
+import CustomDatesCard from "../components/trial/CustomDatesCard";
+import FormTemplatesCard from "../components/trial/FormTemplatesCard";
+import CalendarIntegrationCard from "../components/trial/CalendarIntegrationCard";
 
 export default function CreateTrial() {
-  const [formData, setFormData] = useState({
-    courtFileNo: "",
-    styleOfCause: "",
-    trialDate: "",
-    trialDuration: "",
-    customStartDate: "",
-    customEndDate: "",
-    notes: "",
-  });
-
-  const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
-  const [reminderSettings, setReminderSettings] = useState<
-    Record<string, boolean>
-  >({});
-
-  // Mock calendar data
-  const availableCalendars: CalendarType[] = [
-    { id: "1", name: "Personal Calendar", owner: "You", color: "blue" },
-    { id: "2", name: "Team Calendar", owner: "Legal Team", color: "green" },
-    {
-      id: "3",
-      name: "John Smith's Calendar",
-      owner: "John Smith",
-      color: "orange",
-    },
-    {
-      id: "4",
-      name: "Sarah Johnson's Calendar",
-      owner: "Sarah Johnson",
-      color: "purple",
-    },
-    { id: "5", name: "Court Calendar", owner: "Court Admin", color: "red" },
-  ];
-
-  const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
-
-  const handleCalendarToggle = (calendarId: string) => {
-    setSelectedCalendars((prev) =>
-      prev.includes(calendarId)
-        ? prev.filter((id) => id !== calendarId)
-        : [...prev, calendarId]
-    );
-  };
-
-  const handleReminderToggle = (calendarId: string) => {
-    setReminderSettings((prev) => ({
-      ...prev,
-      [calendarId]: !prev[calendarId],
-    }));
-  };
-
-  const handleSubmit = () => {
-    alert("Trial created successfully!");
-    console.log("Trial Data:", formData);
-    console.log("Selected Calendars:", selectedCalendars);
-    console.log("Reminder Settings:", reminderSettings);
-  };
+  const {
+    formData,
+    selectedCalendars,
+    reminderSettings,
+    customDates,
+    selectedFormTemplates,
+    calculatedDeadlines,
+    availableCalendars,
+    availableFormTemplates,
+    handleInputChange,
+    handleCalendarToggle,
+    handleReminderToggle,
+    addCustomDate,
+    updateCustomDate,
+    removeCustomDate,
+    handleFormTemplateToggle,
+    handleSubmit,
+  } = useCreateTrial();
 
   return (
     <div className="space-y-6">
@@ -201,10 +138,36 @@ export default function CreateTrial() {
               </div>
             </CardContent>
           </Card>
+          <TrialDetailsCard
+            formData={formData}
+            onInputChange={handleInputChange}
+          />
+
+          <CustomDatesCard
+            customDates={customDates}
+            onAddCustomDate={addCustomDate}
+            onUpdateCustomDate={updateCustomDate}
+            onRemoveCustomDate={removeCustomDate}
+          />
+
+          <FormTemplatesCard
+            availableFormTemplates={availableFormTemplates}
+            selectedFormTemplates={selectedFormTemplates}
+            calculatedDeadlines={calculatedDeadlines}
+            onFormTemplateToggle={handleFormTemplateToggle}
+          />
         </div>
 
         {/* Calendar Integration */}
         <div>
+          <CalendarIntegrationCard
+            availableCalendars={availableCalendars}
+            selectedCalendars={selectedCalendars}
+            reminderSettings={reminderSettings}
+            onCalendarToggle={handleCalendarToggle}
+            onReminderToggle={handleReminderToggle}
+            onSubmit={handleSubmit}
+          />
           <Card style={{ borderColor: "#ecdbe2" }}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
