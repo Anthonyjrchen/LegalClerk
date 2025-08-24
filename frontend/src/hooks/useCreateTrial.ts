@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useCalendars } from "./useCalendars";
 
 interface CustomDate {
   id: string;
@@ -31,14 +32,35 @@ interface CalculatedDeadline {
   is_business_days: boolean;
 }
 
-interface CalendarType {
+interface MicrosoftGraphCalendar {
   id: string;
   name: string;
-  owner: string;
+  owner: {
+    name: string;
+    address: string;
+  };
   color: string;
+  canEdit: boolean;
+  isShared: boolean;
 }
 
-export function useCreateTrial() {
+interface CalendarSelections {
+  targetCalendars: string[]; // Where trial events go
+  reminderCalendars: string[]; // Where deadline reminders go
+}
+
+interface FormTemplateReminderSettings {
+  [templateId: string]: {
+    [calendarId: string]: boolean;
+  };
+}
+
+interface UseCreateTrialProps {
+  user: any;
+  accessToken: string | null;
+}
+
+export function useCreateTrial({ user, accessToken }: UseCreateTrialProps) {
   const [formData, setFormData] = useState({
     courtFileNo: "",
     styleOfCause: "",
@@ -49,20 +71,33 @@ export function useCreateTrial() {
     notes: "",
   });
 
-  const [selectedCalendars, setSelectedCalendars] = useState<string[]>([]);
-  const [reminderSettings, setReminderSettings] = useState<Record<string, boolean>>({});
+  const [calendarSelections, setCalendarSelections] = useState<CalendarSelections>({
+    targetCalendars: [],
+    reminderCalendars: [],
+  });
   const [customDates, setCustomDates] = useState<CustomDate[]>([]);
   const [selectedFormTemplates, setSelectedFormTemplates] = useState<string[]>([]);
   const [calculatedDeadlines, setCalculatedDeadlines] = useState<Record<string, CalculatedDeadline[]>>({});
+  const [formTemplateReminderSettings, setFormTemplateReminderSettings] = useState<FormTemplateReminderSettings>({});
 
-  // Mock data
-  const availableCalendars: CalendarType[] = [
-    { id: "1", name: "Personal Calendar", owner: "You", color: "blue" },
-    { id: "2", name: "Team Calendar", owner: "Legal Team", color: "green" },
-    { id: "3", name: "John Smith's Calendar", owner: "John Smith", color: "orange" },
-    { id: "4", name: "Sarah Johnson's Calendar", owner: "Sarah Johnson", color: "purple" },
-    { id: "5", name: "Court Calendar", owner: "Court Admin", color: "red" },
-  ];
+  // Use the existing useCalendars hook
+  const { data: calendars = [], isLoading: loadingCalendars } = useCalendars({ 
+    user, 
+    accessToken 
+  });
+
+  // Transform the calendar data to match our interface
+  const availableCalendars: MicrosoftGraphCalendar[] = calendars.map(cal => ({
+    id: cal.id,
+    name: cal.name,
+    owner: {
+      name: cal.groupName || "You",
+      address: user?.email || "",
+    },
+    color: cal.color || "blue",
+    canEdit: true,
+    isShared: cal.type === "shared" || cal.type === "group",
+  }));
 
   const availableFormTemplates: FormTemplate[] = [
     {
@@ -211,18 +246,31 @@ export function useCreateTrial() {
     setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
-  const handleCalendarToggle = (calendarId: string) => {
-    setSelectedCalendars((prev) =>
-      prev.includes(calendarId)
-        ? prev.filter((id) => id !== calendarId)
-        : [...prev, calendarId]
-    );
+  const handleTargetCalendarToggle = (calendarId: string) => {
+    setCalendarSelections((prev) => ({
+      ...prev,
+      targetCalendars: prev.targetCalendars.includes(calendarId)
+        ? prev.targetCalendars.filter((id) => id !== calendarId)
+        : [...prev.targetCalendars, calendarId],
+    }));
   };
 
-  const handleReminderToggle = (calendarId: string) => {
-    setReminderSettings((prev) => ({
+  const handleReminderCalendarToggle = (calendarId: string) => {
+    setCalendarSelections((prev) => ({
       ...prev,
-      [calendarId]: !prev[calendarId],
+      reminderCalendars: prev.reminderCalendars.includes(calendarId)
+        ? prev.reminderCalendars.filter((id) => id !== calendarId)
+        : [...prev.reminderCalendars, calendarId],
+    }));
+  };
+
+  const handleFormTemplateReminderToggle = (templateId: string, calendarId: string) => {
+    setFormTemplateReminderSettings((prev) => ({
+      ...prev,
+      [templateId]: {
+        ...prev[templateId],
+        [calendarId]: !prev[templateId]?.[calendarId],
+      },
     }));
   };
 
@@ -259,8 +307,8 @@ export function useCreateTrial() {
   const handleSubmit = () => {
     alert("Trial created successfully!");
     console.log("Trial Data:", formData);
-    console.log("Selected Calendars:", selectedCalendars);
-    console.log("Reminder Settings:", reminderSettings);
+    console.log("Calendar Selections:", calendarSelections);
+    console.log("Form Template Reminder Settings:", formTemplateReminderSettings);
     console.log("Custom Dates:", customDates);
     console.log("Selected Form Templates:", selectedFormTemplates);
     console.log("Calculated Deadlines:", calculatedDeadlines);
@@ -275,16 +323,18 @@ export function useCreateTrial() {
 
   return {
     formData,
-    selectedCalendars,
-    reminderSettings,
+    calendarSelections,
+    formTemplateReminderSettings,
     customDates,
     selectedFormTemplates,
     calculatedDeadlines,
     availableCalendars,
     availableFormTemplates,
+    loadingCalendars,
     handleInputChange,
-    handleCalendarToggle,
-    handleReminderToggle,
+    handleTargetCalendarToggle,
+    handleReminderCalendarToggle,
+    handleFormTemplateReminderToggle,
     addCustomDate,
     updateCustomDate,
     removeCustomDate,
