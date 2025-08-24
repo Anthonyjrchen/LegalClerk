@@ -86,14 +86,17 @@ export default function TopBar() {
   }
 
   return (
-    <div className="bg-white border-b border-gray-200 px-6 py-4 flex items-center justify-between">
+    <div
+      className="border-b border-gray-200 px-6 py-4 flex items-center justify-between"
+      style={{ backgroundColor: "#fffafdff" }}
+    >
       {/* Left side - App info and current page */}
       <div className="flex items-center space-x-4">
         <div className="flex items-center space-x-2">
-          <div className="text-2xl">⚖️</div>
+          {/* <img src="/legalclerk.svg" alt="LegalClerk" className="w-8 h-8" /> */}
           <div>
-            <h1 className="text-xl font-bold text-gray-900">LegalClerk</h1>
-            <p className="text-xs text-gray-500">Calendar Management</p>
+            <h1 className="text-xl font-bold">LegalClerk</h1>
+            <p className="text-xs">Calendar Management</p>
           </div>
         </div>
       </div>

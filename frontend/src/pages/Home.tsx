@@ -4,13 +4,13 @@ import TopBar from "../components/TopBar";
 import { SidebarProvider } from "../components/ui/sidebar";
 export default function Home() {
   return (
-    <div className="flex h-screen bg-gray-50">
+    <div className="flex h-screen" style={{ backgroundColor: "#fffafdff" }}>
       {/* Sidebar - 250px wide, full height, fixed to left */}
       <div
         style={{
           width: "250px",
           height: "100vh",
-          backgroundColor: "#fff",
+          backgroundColor: "#fffafdff",
           borderRight: "1px solid #e5e7eb",
           position: "fixed",
           left: 0,
@@ -29,7 +29,10 @@ export default function Home() {
         <TopBar />
 
         {/* Page Content */}
-        <main className="flex-1 overflow-x-hidden overflow-y-auto bg-gray-50 p-6">
+        <main
+          className="flex-1 overflow-x-hidden overflow-y-auto p-6"
+          style={{ backgroundColor: "#fffafdff" }}
+        >
           <Outlet />
         </main>
       </div>
