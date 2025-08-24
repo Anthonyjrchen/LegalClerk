@@ -123,7 +123,7 @@ export default function TopBar() {
   return (
     <div
       className="border-b border-gray-200 px-6 py-4 flex items-center justify-between"
-      style={{ backgroundColor: "#fffafdff" }}
+      style={{ backgroundColor: "#fefefe" }}
     >
       {/* Left side - App info and current page */}
       <div className="flex items-center space-x-4">
