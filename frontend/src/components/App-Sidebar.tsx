@@ -1,6 +1,6 @@
 import { Calendar, Home, Inbox, Settings, LogOut, UserCog } from "lucide-react";
 import { NavLink, useNavigate } from "react-router-dom";
-import { supabase } from "../lib/supabaseClient";
+import { supabase } from "../SupabaseClient";
 
 import {
   Sidebar,

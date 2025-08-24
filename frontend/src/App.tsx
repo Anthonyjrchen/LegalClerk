@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "./AuthProvider";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ProfileSetupWrapper from "./components/ProfileSetupWrapper";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Settings from "./pages/Settings";
@@ -16,11 +17,22 @@ export default function App() {
     <AuthProvider>
       <BrowserRouter>
         <Routes>
+          {/* Public routes */}
           <Route path="/login" element={<Login />} />
           <Route path="/signup" element={<Signup />} />
           <Route path="/callback" element={<Callback />} />
+          <Route path="/" element={<Login />} />
+
+          {/* Protected routes wrapped with profile setup */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/home" element={<Home />}>
+            <Route
+              path="/home"
+              element={
+                <ProfileSetupWrapper>
+                  <Home />
+                </ProfileSetupWrapper>
+              }
+            >
               <Route path="dashboard" element={<Dashboard />} />
               <Route path="settings" element={<Settings />} />
               <Route path="createTrial" element={<CreateTrial />} />
@@ -29,7 +41,6 @@ export default function App() {
               <Route index element={<Dashboard />} />
             </Route>
           </Route>
-          <Route path="/" element={<Login />} />
         </Routes>
       </BrowserRouter>
     </AuthProvider>

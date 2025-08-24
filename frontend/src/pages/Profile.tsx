@@ -7,6 +7,8 @@ import {
 } from "../components/ui/popover";
 import { Calendar } from "../components/ui/calendar";
 
+import { useUserProfile } from "../hooks/UserProfileState";
+
 interface CalendarOption {
   id: string;
   name: string;
@@ -25,6 +27,7 @@ export default function Profile() {
   const [selectedCalendar, setSelectedCalendar] =
     useState<CalendarOption | null>(null);
   const [calendarsLoading, setCalendarsLoading] = useState(false);
+  const { profile } = useUserProfile();
 
   async function handleTestEvent() {
     setEventResult(null);
@@ -152,11 +155,13 @@ export default function Profile() {
         <div className="space-y-4">
           <div className="flex items-center space-x-4">
             <div className="w-16 h-16 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-xl font-bold">
-              {user?.email?.charAt(0).toUpperCase() || "U"}
+              {profile?.display_name?.charAt(0).toUpperCase() ||
+                user?.email?.charAt(0).toUpperCase() ||
+                "U"}
             </div>
             <div>
               <h3 className="text-lg font-medium text-gray-900">
-                {user?.email?.split("@")[0] || "User"}
+                {profile?.display_name || "Retrieving User..."}
               </h3>
               <p className="text-gray-600">{user?.email || "Not logged in"}</p>
               <p className="text-sm text-gray-500">

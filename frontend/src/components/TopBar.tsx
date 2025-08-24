@@ -1,25 +1,17 @@
 import { useState, useEffect } from "react";
-import { supabase } from "../SupabaseClient";
+import { useAuth } from "../AuthProvider";
+import { useUserProfile } from "../hooks/UserProfileState";
 
 export default function TopBar() {
-  const [user, setUser] = useState<any>(null);
-  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const { user, session, signOut } = useAuth();
   const [msConnected, setMsConnected] = useState<boolean | null>(null);
+  const { profile } = useUserProfile();
+
+  const accessToken = session?.access_token;
 
   const CLIENT_ID = "bdcf2624-e786-4a59-a8a2-eecabe38ffdd";
   const REDIRECT_URI = "http://localhost:5173/callback";
   const SCOPES = "openid offline_access Calendars.ReadWrite User.Read";
-
-  useEffect(() => {
-    async function getSessionAndUser() {
-      const { data } = await supabase.auth.getSession();
-      if (data?.session) {
-        setUser(data.session.user);
-        setAccessToken(data.session.access_token);
-      }
-    }
-    getSessionAndUser();
-  }, []);
 
   useEffect(() => {
     async function fetchMsStatus() {
@@ -56,8 +48,8 @@ export default function TopBar() {
   }
 
   async function handleSignOut() {
-    await supabase.auth.signOut();
-    window.location.href = "/auth";
+    await signOut();
+    window.location.href = "/login";
   }
 
   async function handleMicrosoftDisconnect() {
@@ -85,6 +77,49 @@ export default function TopBar() {
     }
   }
 
+  const getMsStatusDisplay = () => {
+    if (msConnected === null) {
+      return (
+        <div className="flex items-center space-x-2 px-3 py-2 bg-gray-100 rounded-lg">
+          <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
+          <span className="text-sm text-gray-600">
+            Checking Microsoft connection...
+          </span>
+        </div>
+      );
+    } else if (msConnected) {
+      return (
+        <div className="flex items-center space-x-2 px-3 py-2 bg-green-100 rounded-lg">
+          <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+          <span className="text-sm text-green-800 font-medium">
+            Microsoft Connected
+          </span>
+          <div className="text-green-600">✓</div>
+          <button
+            onClick={handleMicrosoftDisconnect}
+            className="ml-2 px-2 py-1 text-xs bg-green-200 hover:bg-green-300 text-green-800 rounded transition-colors"
+            title="Disconnect to refresh permissions"
+          >
+            Refresh
+          </button>
+        </div>
+      );
+    } else {
+      return (
+        <a
+          href={getMicrosoftAuthUrl()}
+          className="flex items-center space-x-2 px-3 py-2 bg-red-100 hover:bg-red-200 rounded-lg transition-colors"
+        >
+          <div className="w-2 h-2 bg-red-500 rounded-full"></div>
+          <span className="text-sm text-red-800 font-medium">
+            Connect Microsoft
+          </span>
+          <div className="text-red-600">⚠️</div>
+        </a>
+      );
+    }
+  };
+
   return (
     <div
       className="border-b border-gray-200 px-6 py-4 flex items-center justify-between"
@@ -102,42 +137,7 @@ export default function TopBar() {
       </div>
 
       {/* Center - Microsoft Connection Status */}
-      <div className="flex items-center space-x-3">
-        {msConnected === null ? (
-          <div className="flex items-center space-x-2 px-3 py-2 bg-gray-100 rounded-lg">
-            <div className="w-2 h-2 bg-gray-400 rounded-full animate-pulse"></div>
-            <span className="text-sm text-gray-600">
-              Checking Microsoft connection...
-            </span>
-          </div>
-        ) : msConnected ? (
-          <div className="flex items-center space-x-2 px-3 py-2 bg-green-100 rounded-lg">
-            <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-            <span className="text-sm text-green-800 font-medium">
-              Microsoft Connected
-            </span>
-            <div className="text-green-600">✓</div>
-            <button
-              onClick={handleMicrosoftDisconnect}
-              className="ml-2 px-2 py-1 text-xs bg-green-200 hover:bg-green-300 text-green-800 rounded transition-colors"
-              title="Disconnect to refresh permissions"
-            >
-              Refresh
-            </button>
-          </div>
-        ) : (
-          <a
-            href={getMicrosoftAuthUrl()}
-            className="flex items-center space-x-2 px-3 py-2 bg-red-100 hover:bg-red-200 rounded-lg transition-colors"
-          >
-            <div className="w-2 h-2 bg-red-500 rounded-full"></div>
-            <span className="text-sm text-red-800 font-medium">
-              Connect Microsoft
-            </span>
-            <div className="text-red-600">⚠️</div>
-          </a>
-        )}
-      </div>
+      <div className="flex items-center space-x-3">{getMsStatusDisplay()}</div>
 
       {/* Right side - User info and actions */}
       <div className="flex items-center space-x-4">
@@ -166,7 +166,7 @@ export default function TopBar() {
         <div className="flex items-center space-x-3 pl-3 border-l border-gray-200">
           <div className="text-right">
             <div className="text-sm font-medium text-gray-900">
-              {user?.email?.split("@")[0] || "User"}
+              {profile?.display_name || "Retrieving User..."}
             </div>
             <div className="text-xs text-gray-500">
               {user?.email || "Not logged in"}
@@ -176,7 +176,9 @@ export default function TopBar() {
           <div className="relative">
             <button className="flex items-center space-x-2 p-2 hover:bg-gray-100 rounded-lg transition-colors group">
               <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-600 rounded-full flex items-center justify-center text-white text-sm font-medium">
-                {user?.email?.charAt(0).toUpperCase() || "U"}
+                {profile?.display_name?.charAt(0).toUpperCase() ||
+                  user?.email?.charAt(0).toUpperCase() ||
+                  "U"}
               </div>
               <svg
                 className="w-4 h-4 text-gray-400 group-hover:text-gray-600"
@@ -196,13 +198,13 @@ export default function TopBar() {
             {/* Dropdown menu - you can implement this with state later */}
             <div className="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1">
               <a
-                href="/profile"
+                href="/home/profile"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 Profile
               </a>
               <a
-                href="/settings"
+                href="/home/settings"
                 className="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
               >
                 Settings
