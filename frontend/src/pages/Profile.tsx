@@ -6,7 +6,7 @@ import {
   PopoverContent,
 } from "../components/ui/popover";
 import { Calendar } from "../components/ui/calendar";
-
+import { useCalendars } from "../hooks/useCalendars";
 import { useUserProfile } from "../hooks/UserProfileState";
 
 interface CalendarOption {
@@ -23,11 +23,17 @@ export default function Profile() {
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [eventResult, setEventResult] = useState<string | null>(null);
-  const [calendars, setCalendars] = useState<CalendarOption[]>([]);
   const [selectedCalendar, setSelectedCalendar] =
     useState<CalendarOption | null>(null);
-  const [calendarsLoading, setCalendarsLoading] = useState(false);
   const { profile } = useUserProfile();
+
+  // Use React Query for calendars (same cache as Dashboard!)
+  const {
+    data: calendars = [],
+    isLoading: calendarsLoading,
+    error: calendarsError,
+    refreshCalendars,
+  } = useCalendars({ user, accessToken });
 
   async function handleTestEvent() {
     setEventResult(null);
@@ -83,43 +89,6 @@ export default function Profile() {
     }
   }
 
-  async function fetchCalendars() {
-    if (!user || !accessToken) return;
-
-    try {
-      setCalendarsLoading(true);
-
-      const res = await fetch("http://localhost:8080/api/msgraph/calendars", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${accessToken}`,
-        },
-        body: JSON.stringify({}),
-      });
-
-      if (res.ok) {
-        const data = await res.json();
-        const fetchedCalendars = data.calendars || [];
-        setCalendars(fetchedCalendars);
-
-        // Auto-select the default calendar if available
-        const defaultCalendar = fetchedCalendars.find(
-          (cal: CalendarOption) => cal.isDefaultCalendar
-        );
-        if (defaultCalendar && !selectedCalendar) {
-          setSelectedCalendar(defaultCalendar);
-        }
-      } else {
-        console.error("Failed to fetch calendars");
-      }
-    } catch (err) {
-      console.error("Error fetching calendars:", err);
-    } finally {
-      setCalendarsLoading(false);
-    }
-  }
-
   useEffect(() => {
     async function getSessionAndUser() {
       const { data } = await supabase.auth.getSession();
@@ -131,11 +100,17 @@ export default function Profile() {
     getSessionAndUser();
   }, []);
 
+  // Auto-select default calendar when calendars are loaded
   useEffect(() => {
-    if (user && accessToken) {
-      fetchCalendars();
+    if (calendars.length > 0 && !selectedCalendar) {
+      const defaultCalendar = calendars.find(
+        (cal: CalendarOption) => cal.isDefaultCalendar
+      );
+      if (defaultCalendar) {
+        setSelectedCalendar(defaultCalendar);
+      }
     }
-  }, [user, accessToken]);
+  }, [calendars, selectedCalendar]);
 
   return (
     <div className="space-y-6">
@@ -184,13 +159,25 @@ export default function Profile() {
 
         <div className="space-y-4">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
-              Select Calendar
-            </label>
+            <div className="flex items-center justify-between mb-2">
+              <label className="block text-sm font-medium text-gray-700">
+                Select Calendar
+              </label>
+              <button
+                onClick={refreshCalendars}
+                className="px-2 py-1 text-xs font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+              >
+                🔄 Refresh
+              </button>
+            </div>
             {calendarsLoading ? (
               <div className="flex items-center space-x-2 px-4 py-2 border border-gray-300 rounded-lg bg-gray-50">
                 <div className="w-4 h-4 border-2 border-gray-300 border-t-blue-600 rounded-full animate-spin"></div>
                 <span className="text-gray-600">Loading calendars...</span>
+              </div>
+            ) : calendarsError ? (
+              <div className="px-4 py-2 border border-red-300 rounded-lg bg-red-50 text-red-700">
+                Error loading calendars: {calendarsError.message}
               </div>
             ) : calendars.length === 0 ? (
               <div className="px-4 py-2 border border-red-300 rounded-lg bg-red-50 text-red-700">

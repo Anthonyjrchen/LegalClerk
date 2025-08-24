@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { supabase } from "../SupabaseClient";
+import { useUserProfile } from "../hooks/UserProfileState";
 
 interface DisplayNameModalProps {
   isOpen: boolean;
@@ -13,6 +13,7 @@ export default function DisplayNameModal({
   const [displayName, setDisplayName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { createProfile } = useUserProfile();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -26,27 +27,7 @@ export default function DisplayNameModal({
     setError(null);
 
     try {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser();
-
-      if (!user) {
-        throw new Error("No authenticated user found");
-      }
-
-      // Create user profile in database
-      const { error: profileError } = await supabase
-        .from("user_profiles")
-        .insert({
-          id: user.id,
-          display_name: displayName.trim(),
-          preferences: {},
-        });
-
-      if (profileError) {
-        throw profileError;
-      }
-
+      await createProfile(displayName.trim());
       onComplete(displayName.trim());
     } catch (err) {
       console.error("Error creating user profile:", err);

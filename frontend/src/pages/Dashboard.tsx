@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../SupabaseClient";
+import { useCalendars } from "../hooks/useCalendars";
+import { useCalendarEvents } from "../hooks/useCalendarEvents";
 
 interface Calendar {
   id: string;
@@ -10,47 +12,32 @@ interface Calendar {
   isDefaultCalendar?: boolean;
 }
 
-interface CalendarEvent {
-  id: string;
-  subject: string;
-  start: {
-    dateTime: string;
-    timeZone: string;
-  };
-  end: {
-    dateTime: string;
-    timeZone: string;
-  };
-  location?: {
-    displayName: string;
-  };
-  organizer?: {
-    emailAddress: {
-      name: string;
-      address: string;
-    };
-  };
-  isAllDay: boolean;
-  bodyPreview?: string;
-  webLink?: string;
-  categories?: string[];
-  formattedStartDate?: string;
-  formattedStartTime?: string;
-  formattedEndTime?: string;
-}
-
 export default function Dashboard() {
   const [user, setUser] = useState<any>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
-  const [calendars, setCalendars] = useState<Calendar[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedCalendar, setSelectedCalendar] = useState<Calendar | null>(
     null
   );
-  const [events, setEvents] = useState<CalendarEvent[]>([]);
-  const [eventsLoading, setEventsLoading] = useState(false);
-  const [eventsError, setEventsError] = useState<string | null>(null);
+
+  // Get calendars using React Query
+  const {
+    data: calendars = [],
+    isLoading: calendarsLoading,
+    error: calendarsError,
+    refreshCalendars,
+    isFetching: calendarsRefreshing,
+  } = useCalendars({ user, accessToken });
+
+  // Get events for selected calendar using React Query
+  const {
+    data: events = [],
+    isLoading: eventsLoading,
+    error: eventsError,
+    refreshEvents,
+  } = useCalendarEvents({
+    calendarId: selectedCalendar?.id || null,
+    accessToken,
+  });
 
   useEffect(() => {
     async function getSessionAndUser() {
@@ -63,88 +50,18 @@ export default function Dashboard() {
     getSessionAndUser();
   }, []);
 
-  useEffect(() => {
-    async function fetchCalendars() {
-      if (!user || !accessToken) {
-        setLoading(false);
-        return;
-      }
-
-      try {
-        setLoading(true);
-        setError(null);
-
-        const res = await fetch("http://localhost:8080/api/msgraph/calendars", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({}),
-        });
-
-        if (res.ok) {
-          const data = await res.json();
-          setCalendars(data.calendars || []);
-        } else {
-          const errorData = await res.json();
-          setError(errorData.detail || "Failed to fetch calendars");
-        }
-      } catch (err) {
-        setError("Network error or server not reachable");
-        console.error("Error fetching calendars:", err);
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchCalendars();
-  }, [user, accessToken]);
-
-  const fetchCalendarEvents = async (calendar: Calendar) => {
-    if (!accessToken) return;
-
-    try {
-      setEventsLoading(true);
-      setEventsError(null);
-      setSelectedCalendar(calendar);
-
-      const res = await fetch(
-        "http://localhost:8080/api/msgraph/calendar-events",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${accessToken}`,
-          },
-          body: JSON.stringify({ calendar_id: calendar.id }),
-        }
-      );
-
-      if (res.ok) {
-        const data = await res.json();
-        setEvents(data.events || []);
-      } else {
-        const errorData = await res.json();
-        setEventsError(errorData.detail || "Failed to fetch events");
-      }
-    } catch (err) {
-      setEventsError("Network error or server not reachable");
-      console.error("Error fetching events:", err);
-    } finally {
-      setEventsLoading(false);
-    }
-  };
-
   const handleViewEvents = (calendar: Calendar) => {
     if (selectedCalendar?.id === calendar.id) {
       // If same calendar is clicked, toggle the view
       setSelectedCalendar(null);
-      setEvents([]);
     } else {
-      // Fetch events for the new calendar
-      fetchCalendarEvents(calendar);
+      // Set selected calendar (this will trigger the events query)
+      setSelectedCalendar(calendar);
     }
+  };
+
+  const handleRefreshCalendars = () => {
+    refreshCalendars();
   };
 
   const getCalendarTypeColor = (type: string) => {
@@ -173,7 +90,7 @@ export default function Dashboard() {
     }
   };
 
-  if (loading) {
+  if (calendarsLoading) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="text-lg text-gray-600">Loading calendars...</div>
@@ -181,7 +98,7 @@ export default function Dashboard() {
     );
   }
 
-  if (error) {
+  if (calendarsError) {
     return (
       <div className="bg-red-50 border border-red-200 rounded-lg p-6">
         <div className="flex items-center">
@@ -190,8 +107,10 @@ export default function Dashboard() {
             <h3 className="text-lg font-semibold text-red-800">
               Error Loading Calendars
             </h3>
-            <p className="text-red-600 mt-1">{error}</p>
-            {error.includes("Microsoft account not connected") && (
+            <p className="text-red-600 mt-1">{calendarsError.message}</p>
+            {calendarsError.message.includes(
+              "Microsoft account not connected"
+            ) && (
               <p className="text-sm text-red-500 mt-2">
                 Please connect your Microsoft account in the Profile page.
               </p>
@@ -329,11 +248,19 @@ export default function Dashboard() {
                 {/* Events Display */}
                 {selectedCalendar?.id === calendar.id && (
                   <div className="px-6 py-4 bg-gray-50 border-t border-gray-200">
-                    <div className="mb-3">
-                      <h4 className="text-lg font-medium text-gray-900">
-                        Upcoming Events - {calendar.name}
-                      </h4>
-                      <p className="text-sm text-gray-600">Next 30 days</p>
+                    <div className="mb-3 flex items-center justify-between">
+                      <div>
+                        <h4 className="text-lg font-medium text-gray-900">
+                          Upcoming Events - {calendar.name}
+                        </h4>
+                        <p className="text-sm text-gray-600">Next 30 days</p>
+                      </div>
+                      <button
+                        onClick={refreshEvents}
+                        className="px-3 py-1 text-sm font-medium text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-md transition-colors"
+                      >
+                        🔄 Refresh Events
+                      </button>
                     </div>
 
                     {eventsLoading ? (
@@ -349,7 +276,7 @@ export default function Dashboard() {
                               Error Loading Events
                             </h5>
                             <p className="text-sm text-red-600">
-                              {eventsError}
+                              {eventsError?.message}
                             </p>
                           </div>
                         </div>
@@ -477,11 +404,27 @@ export default function Dashboard() {
             </div>
           </button>
 
-          <button className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors">
-            <div className="text-2xl mr-3">🔄</div>
+          <button
+            onClick={handleRefreshCalendars}
+            disabled={calendarsRefreshing}
+            className="flex items-center p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+          >
+            <div
+              className={`text-2xl mr-3 ${
+                calendarsRefreshing ? "animate-spin" : ""
+              }`}
+            >
+              {calendarsRefreshing ? "⟳" : "🔄"}
+            </div>
             <div className="text-left">
-              <div className="font-medium text-gray-900">Refresh Calendars</div>
-              <div className="text-sm text-gray-600">Update calendar list</div>
+              <div className="font-medium text-gray-900">
+                {calendarsRefreshing ? "Refreshing..." : "Refresh Calendars"}
+              </div>
+              <div className="text-sm text-gray-600">
+                {calendarsRefreshing
+                  ? "Updating calendar list"
+                  : "Update calendar list"}
+              </div>
             </div>
           </button>
 

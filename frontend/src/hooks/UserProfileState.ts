@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { supabase } from "../SupabaseClient";
 import { useAuth } from '../AuthProvider';
 
@@ -10,65 +10,79 @@ interface UserProfile {
   updated_at: string;
 }
 
+const fetchUserProfile = async (userId: string): Promise<UserProfile | null> => {
+  const { data, error } = await supabase
+    .from('user_profiles')
+    .select('*')
+    .eq('id', userId)
+    .single();
+
+  if (error) {
+    if (error.code === 'PGRST116') {
+      // No profile exists - return null to indicate user needs to create one
+      return null;
+    } else {
+      throw new Error(`Error fetching user profile: ${error.message}`);
+    }
+  }
+
+  return data;
+};
+
 export function useUserProfile() {
   const { user } = useAuth();
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [isLoading, setIsLoading] = useState(true);
-  const [needsProfile, setNeedsProfile] = useState(false);
+  const queryClient = useQueryClient();
 
-  useEffect(() => {
-    async function fetchProfile() {
-      if (!user) {
-        setIsLoading(false);
-        return;
-      }
+  const query = useQuery({
+    queryKey: ['userProfile', user?.id],
+    queryFn: () => fetchUserProfile(user!.id),
+    enabled: !!user,
+    staleTime: 10 * 60 * 1000, // 10 minutes - profiles don't change often
+    gcTime: 30 * 60 * 1000, // 30 minutes - keep in memory longer
+  });
 
-      try {
-        const { data, error } = await supabase
-          .from('user_profiles')
-          .select('*')
-          .eq('id', user.id)
-          .single();
+  const createProfile = async (displayName: string) => {
+    if (!user) return;
 
-        if (error) {
-          if (error.code === 'PGRST116') {
-            // No profile exists - user needs to create one
-            setNeedsProfile(true);
-          } else {
-            console.error('Error fetching user profile:', error);
+    try {
+      const { data, error } = await supabase
+        .from('user_profiles')
+        .insert([
+          {
+            id: user.id,
+            display_name: displayName,
+            preferences: {},
           }
-        } else {
-          setProfile(data);
-          setNeedsProfile(false);
-        }
-      } catch (err) {
-        console.error('Error fetching user profile:', err);
-      } finally {
-        setIsLoading(false);
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        throw new Error(`Error creating profile: ${error.message}`);
       }
+
+      // Update the cache with the new profile
+      queryClient.setQueryData(['userProfile', user.id], data);
+      
+      return data;
+    } catch (err) {
+      console.error('Error creating user profile:', err);
+      throw err;
     }
+  };
 
-    fetchProfile();
-  }, [user]);
-
-  const createProfile = (displayName: string) => {
+  const refreshProfile = () => {
     if (user) {
-      const newProfile: UserProfile = {
-        id: user.id,
-        display_name: displayName,
-        preferences: {},
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
-      };
-      setProfile(newProfile);
-      setNeedsProfile(false);
+      queryClient.invalidateQueries({ queryKey: ['userProfile', user.id] });
     }
   };
 
   return {
-    profile,
-    isLoading,
-    needsProfile,
-    createProfile
+    profile: query.data || null,
+    isLoading: query.isLoading,
+    needsProfile: !query.isLoading && query.data === null && !!user,
+    error: query.error,
+    createProfile,
+    refreshProfile
   };
 }
