@@ -96,7 +96,7 @@ export default function CreateTrial() {
       <div className="grid gap-6 lg:grid-cols-3">
         {/* Trial Details */}
         <div className="lg:col-span-2 space-y-6">
-          <Card>
+          <Card style={{ borderColor: "#ecdbe2" }}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Calendar className="h-5 w-5" />
@@ -193,7 +193,6 @@ export default function CreateTrial() {
                 <Textarea
                   id="notes"
                   className="mt-1"
-                  style={{ backgroundColor: "#fffafdff" }}
                   placeholder="Any additional details about the trial..."
                   value={formData.notes}
                   onChange={(e) => handleInputChange("notes", e.target.value)}
@@ -206,7 +205,7 @@ export default function CreateTrial() {
 
         {/* Calendar Integration */}
         <div>
-          <Card>
+          <Card style={{ borderColor: "#ecdbe2" }}>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Users className="h-5 w-5" />
@@ -214,7 +213,7 @@ export default function CreateTrial() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <p className="text-sm text-muted-foreground">
+              <p className="text-sm" style={{ color: "#902047" }}>
                 Select which calendars to add this trial to:
               </p>
 
