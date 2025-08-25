@@ -50,14 +50,21 @@ export default function FormTemplatesCard({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">
+        <p
+          className="text-sm text-muted-foreground"
+          style={{ color: "#902047" }}
+        >
           Select form templates to attach to this trial. Deadlines will be
           automatically calculated based on your trial date:
         </p>
 
         <div className="space-y-4">
           {availableFormTemplates.map((template) => (
-            <div key={template.id} className="border rounded-lg p-4">
+            <div
+              key={template.id}
+              className="border rounded-lg p-4"
+              style={{ borderColor: "#ffd2f4" }}
+            >
               <div className="flex items-start space-x-3">
                 <Checkbox
                   id={`template-${template.id}`}
@@ -73,7 +80,10 @@ export default function FormTemplatesCard({
                     >
                       {template.template_name}
                     </Label>
-                    <p className="text-xs text-muted-foreground">
+                    <p
+                      className="text-xs text-muted-foreground"
+                      style={{ color: "#902047" }}
+                    >
                       {template.description}
                     </p>
                   </div>
@@ -81,8 +91,14 @@ export default function FormTemplatesCard({
                   {/* Show deadline preview if template is selected */}
                   {selectedFormTemplates.includes(template.id) &&
                     calculatedDeadlines[template.id] && (
-                      <div className="mt-3 p-3 bg-gray-50 rounded-md">
-                        <h4 className="text-xs font-medium text-gray-700 mb-2 flex items-center gap-1">
+                      <div
+                        className="mt-3 p-3 rounded-md"
+                        style={{ backgroundColor: "#fdf2f8" }}
+                      >
+                        <h4
+                          className="text-xs font-medium mb-2 flex items-center gap-1"
+                          style={{ color: "#000000CC" }}
+                        >
                           <Clock className="h-3 w-3" />
                           Calculated Deadlines:
                         </h4>
@@ -93,18 +109,21 @@ export default function FormTemplatesCard({
                                 key={index}
                                 className="flex justify-between items-center text-xs"
                               >
-                                <span className="text-gray-600">
+                                <span style={{ color: "#902047" }}>
                                   {deadline.deadline_name}
                                 </span>
                                 <div className="text-right">
                                   {deadline.calculated_date ? (
                                     <>
-                                      <div className="font-medium text-gray-900">
+                                      <div
+                                        className="font-medium"
+                                        style={{ color: "#902047" }}
+                                      >
                                         {new Date(
                                           deadline.calculated_date
                                         ).toLocaleDateString()}
                                       </div>
-                                      <div className="text-gray-500">
+                                      <div style={{ color: "#902047" }}>
                                         {deadline.days_before}{" "}
                                         {deadline.is_business_days
                                           ? "business"
@@ -113,7 +132,7 @@ export default function FormTemplatesCard({
                                       </div>
                                     </>
                                   ) : (
-                                    <span className="text-gray-400">
+                                    <span style={{ color: "#902047" }}>
                                       No reference date set
                                     </span>
                                   )}
@@ -132,9 +151,14 @@ export default function FormTemplatesCard({
 
         {selectedFormTemplates.length === 0 && (
           <div className="text-center py-6 text-gray-400">
-            <FileText className="h-8 w-8 mx-auto mb-2" />
-            <p className="text-sm">No form templates selected</p>
-            <p className="text-xs">
+            <FileText
+              className="h-8 w-8 mx-auto mb-2"
+              style={{ color: "#90204785" }}
+            />
+            <p className="text-sm" style={{ color: "#90204785" }}>
+              No form templates selected
+            </p>
+            <p className="text-xs" style={{ color: "#90204785" }}>
               Select templates above to see calculated deadlines
             </p>
           </div>

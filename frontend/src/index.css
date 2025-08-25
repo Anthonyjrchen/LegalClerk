@@ -20,9 +20,9 @@ input[type="date"]::-webkit-datetime-edit-text,
 input[type="date"]::-webkit-datetime-edit-month-field,
 input[type="date"]::-webkit-datetime-edit-day-field,
 input[type="date"]::-webkit-datetime-edit-year-field {
-  color: #902047;
+  color: #902047B3;
 }
 
 input[type="date"]::-moz-placeholder {
-  color: #902047;
+  color: #902047B3;
 }

@@ -117,7 +117,7 @@ export default function TrialDetailsCard({
           <Textarea
             id="notes"
             className="mt-1"
-            style={{ backgroundColor: "#fffafdff" }}
+            style={{ backgroundColor: "#fdf2f8" }}
             placeholder="Any additional details about the trial..."
             value={formData.notes}
             onChange={(e) => onInputChange("notes", e.target.value)}

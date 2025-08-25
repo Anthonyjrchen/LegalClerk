@@ -55,15 +55,16 @@ export default function CalendarIntegrationCard({
   onFormTemplateReminderToggle,
   onSubmit,
 }: CalendarIntegrationCardProps) {
-  const getCalendarColor = (color: string) => {
-    const colorMap: Record<string, string> = {
-      blue: "#f871c0ff",
-      green: "#10b981",
-      orange: "#f97316",
-      purple: "#8b5cf6",
-      red: "#ef4444",
-    };
-    return colorMap[color] || "#6b7280";
+  const getCalendarColor = (color: string, index: number) => {
+    const colors = [
+      "#3b82f6",
+      "#10b981",
+      "#f97316",
+      "#8b5cf6",
+      "#ef4444",
+      "#ec4899",
+    ];
+    return colors[index % colors.length];
   };
 
   return (
@@ -88,12 +89,15 @@ export default function CalendarIntegrationCard({
                 <Calendar className="h-4 w-4" />
                 <h4 className="font-medium">Target Calendars</h4>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p
+                className="text-sm text-muted-foreground"
+                style={{ color: "#902047" }}
+              >
                 Select calendars where trial events will be created:
               </p>
 
               <div className="space-y-2">
-                {availableCalendars.map((calendar) => (
+                {availableCalendars.map((calendar, index) => (
                   <div
                     key={`target-${calendar.id}`}
                     className="flex items-center space-x-2"
@@ -112,7 +116,10 @@ export default function CalendarIntegrationCard({
                       <div
                         className="w-3 h-3 rounded-full"
                         style={{
-                          backgroundColor: getCalendarColor(calendar.color),
+                          backgroundColor: getCalendarColor(
+                            calendar.color,
+                            index
+                          ),
                         }}
                       />
                       <Label
@@ -137,12 +144,15 @@ export default function CalendarIntegrationCard({
                 <Bell className="h-4 w-4" />
                 <h4 className="font-medium">Reminder Calendars</h4>
               </div>
-              <p className="text-sm text-muted-foreground">
+              <p
+                className="text-sm text-muted-foreground"
+                style={{ color: "#902047" }}
+              >
                 Select calendars where deadline reminders will be created:
               </p>
 
               <div className="space-y-2">
-                {availableCalendars.map((calendar) => (
+                {availableCalendars.map((calendar, index) => (
                   <div
                     key={`reminder-${calendar.id}`}
                     className="flex items-center space-x-2"
@@ -161,7 +171,10 @@ export default function CalendarIntegrationCard({
                       <div
                         className="w-3 h-3 rounded-full"
                         style={{
-                          backgroundColor: getCalendarColor(calendar.color),
+                          backgroundColor: getCalendarColor(
+                            calendar.color,
+                            index
+                          ),
                         }}
                       />
                       <Label

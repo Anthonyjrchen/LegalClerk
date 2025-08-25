@@ -36,7 +36,10 @@ export default function CustomDatesCard({
         </CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">
+        <p
+          className="text-sm text-muted-foreground"
+          style={{ color: "#902047" }}
+        >
           Add important dates related to this trial (e.g., Discovery Deadline,
           Expert Report Due, Pre-trial Conference):
         </p>
@@ -87,7 +90,7 @@ export default function CustomDatesCard({
 
           <Button
             type="button"
-            variant="outline"
+            variant="pink"
             onClick={onAddCustomDate}
             className="w-full"
           >
