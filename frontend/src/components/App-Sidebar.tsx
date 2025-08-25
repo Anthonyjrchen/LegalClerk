@@ -8,7 +8,6 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenuButton,
 } from "@/components/ui/sidebar";
 
@@ -52,7 +51,7 @@ export default function AppSidebar() {
   return (
     <Sidebar>
       <SidebarHeader className="text-gray-800 font-bold text-lg py-1 flex items-center justify-center">
-        <img src="/pink.svg" alt="LegalClerk" className="w-24 h-24" />
+        <img src="/whiteonpink.svg" alt="LegalClerk" className="w-24 h-24" />
       </SidebarHeader>
       <div className="border-b border-gray-200 mx-2" />
       <SidebarContent
@@ -61,9 +60,6 @@ export default function AppSidebar() {
       >
         <div>
           <SidebarGroup>
-            <SidebarGroupLabel className="text-gray-500 font-medium mb-4">
-              Navigation
-            </SidebarGroupLabel>
             <SidebarGroupContent>
               <div>
                 {items.map((item) => (
@@ -72,28 +68,14 @@ export default function AppSidebar() {
                       {({ isActive }) => (
                         <div
                           className={[
-                            "block rounded-[7px] transition-colors",
+                            "block rounded-[7px] transition-all duration-200 ease-in-out border border-transparent",
                             isActive
-                              ? "bg-white border border-gray-400 text-black"
-                              : "text-black border border-transparent",
+                              ? "text-black"
+                              : "text-black bg-transparent hover:bg-[#fdf2f8]",
                           ].join(" ")}
-                          style={
-                            !isActive ? { backgroundColor: "#fefefe" } : {}
-                          }
-                          onMouseEnter={(e) => {
-                            if (!isActive) {
-                              e.currentTarget.style.backgroundColor = "white";
-                              e.currentTarget.style.borderColor = "#d1d5db";
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (!isActive) {
-                              e.currentTarget.style.backgroundColor = "#fefefe";
-                              e.currentTarget.style.borderColor = "transparent";
-                            }
-                          }}
+                          style={isActive ? { backgroundColor: "#fdf2f8" } : {}}
                         >
-                          <SidebarMenuButton className="flex items-center gap-3 w-full py-2 px-2 font-semibold text-lg transition-colors">
+                          <SidebarMenuButton className="flex items-center gap-3 w-full py-2 px-2 font-semibold text-lg">
                             <item.icon className="w-5 h-5" />
                             <span className="flex-1 text-left text-lg">
                               {item.title}
@@ -111,16 +93,7 @@ export default function AppSidebar() {
         <div className="mt-6">
           <button
             onClick={handleLogout}
-            className="flex items-center gap-2 w-full py-2 px-2 rounded-[7px] font-semibold text-lg text-red-600 border border-transparent transition-colors"
-            style={{ backgroundColor: "#fefefe" }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.backgroundColor = "#fef2f2";
-              e.currentTarget.style.borderColor = "#fca5a5";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.backgroundColor = "#fefefe";
-              e.currentTarget.style.borderColor = "transparent";
-            }}
+            className="flex items-center gap-2 w-full py-2 px-2 rounded-[7px] font-semibold text-lg text-red-600 border border-transparent bg-[#fefefe] transition-all duration-200 ease-in-out hover:bg-red-50 hover:border-red-300"
           >
             <LogOut className="w-5 h-5" />
             <span className="flex-1 text-left text-lg">Logout</span>
